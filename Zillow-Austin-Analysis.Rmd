@@ -1,0 +1,30 @@
+---
+title: "Analysis of Zillow Data from Austin, Texas"
+author: "Will Curkan"
+date: "2022-12-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Austin, a hilly city due south in the middle of Texas, is where all the young, hip Texans and out-of-staters are converging to live. Other than its famous 6-th street nightlife, the "weird" city is home to many "corporate and regional headquarters" from companies like Dell, IBM, Facebook, VISA and many more [1] - these are some great reasons to "kick up the roots" and mosey on over to Austin! 
+
+## Data Acquisition and Explanation
+
+Alex Huggler on Kaggle.com provides Zillow Housing data for November 2022 on Kaggle.com [2]. 
+
+```{r echo = F}
+zillow.dat <- read.csv('Zillow_Austin_11-16-22.csv')
+```
+
+
+
+### References:
+
+[1] https://www.austinchamber.com/economic-development/key-industries/corporate-headquarters
+
+[2] https://www.kaggle.com/datasets/alexhuggler/austin-zillow-houses-for-sale
