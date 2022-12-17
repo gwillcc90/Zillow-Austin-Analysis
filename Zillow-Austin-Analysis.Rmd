@@ -27,7 +27,7 @@ The objective of this project is to make inferences about true statistic paramet
 
 ```{r load data, echo = F}
 zillow.dat <- read.csv('Zillow_Austin_11-16-22.csv')
-head(zillow.dat)
+#head(zillow.dat)
 # dim(zillow.dat)
 ```
 Alex Huggler on Kaggle.com provides Zillow Housing data for November 2022 on Kaggle.com [2]. The data has 800 unique observations and 20 features: one observation per unique housing unit and each feature as some trait of the house like its zip code or number of bedrooms.
@@ -39,21 +39,20 @@ The following features will be used in analysis of Austin housing prices:
 |Feature|Description|
 |-------|-----------|
 |Price| price of housing|
-|AddressCity|%%%%%%%%%%%%%%%
-|AddressZip|
-|beds|
-|baths|
-|area|
-|latitude|
-|longitude|
-|variableData|%%%%%%%%%%
-|pgapt|%%%%%%%%%%%%%%%
-|sgapt|
-|zestimate|
-|info3string|%%%%%%%
-|brokerName|
+|AddressCity| City name|
+|AddressZip| Zip code|
+|beds| Number of beds|
+|baths| Number of baths|
+|area| Sq. foot|
+|latitude| Latitude|
+|longitude| Longitude|
+|variableData| String of description from Zillow|
+|sgapt| For Sale by broker OR new construction (cat)|
+|zestimate| Zillow how price estimate|
+|info3string| Link to picture of housing unit|
+|brokerName| Who sells the house|
 
-Features from the dataset have been removed for this analysis. The feature `PriceUnformatted` is removed because it is the same as `Price`. `Address` and `AddressStreet` are removed as they will not be useful in analysis or prediction because they're all unique and non-numeric. `AddressState` only had the value "Texas". `isZillowOwned` is only FALSE as Zillow does not own any of the properties. `badgeInfo` is undefined and is NULL.
+Features from the dataset have been removed for this analysis. The feature `PriceUnformatted` is removed because it is the same as `Price`. `Address` and `AddressStreet` are removed as they will not be useful in analysis or prediction because they're all unique and non-numeric. `AddressState` only had the value "Texas". `isZillowOwned` is only FALSE as Zillow does not own any of the properties. `badgeInfo` is undefined and is NULL. `pgapt` is all "For Sale". 
 
 
 ```{r}
@@ -62,13 +61,16 @@ hist(zillow.dat$price)
 
 ## EDA
 
-First, looking at 
+First, let's look at the top 5 brokers with the most listings.
 
 ```{r}
 zillow.dat %>%
-  group_by(brokerName) %>%
+  # group by category
+  group_by(brokerName) %>% 
+  # Count any value (number of prices in this case)
   summarize(count_distinct = n_distinct(price)) %>%
-  arrange(desc(count_distinct))
+  # Most listings first
+  arrange(desc(count_distinct)) 
 ```
 
 
