@@ -11,8 +11,8 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r libraries, echo = F, warning=F}
-library(dplyr)
+```{r libraries, echo = F, warning=F, message=F, include=F}
+library(dplyr, quietly = T)
 ```
 
 ## Introduction
@@ -26,9 +26,10 @@ The objective of this project is to make inferences about true statistic paramet
 ## Data Acquisition and Explanation
 
 ```{r load data, echo = F}
-zillow.dat <- read.csv('Zillow_Austin_11-16-22.csv')
-#head(zillow.dat)
-# dim(zillow.dat)
+set.seed(2022)
+data <- read.csv('Zillow_Austin_11-16-22.csv')
+#head(data)
+#dim(data)
 ```
 Alex Huggler on Kaggle.com provides Zillow Housing data for November 2022 on Kaggle.com [2]. The data has 800 unique observations and 20 features: one observation per unique housing unit and each feature as some trait of the house like its zip code or number of bedrooms.
 
@@ -49,30 +50,71 @@ The following features will be used in analysis of Austin housing prices:
 |variableData| String of description from Zillow|
 |sgapt| For Sale by broker OR new construction (cat)|
 |zestimate| Zillow how price estimate|
-|info3string| Link to picture of housing unit|
 |brokerName| Who sells the house|
 
-Features from the dataset have been removed for this analysis. The feature `PriceUnformatted` is removed because it is the same as `Price`. `Address` and `AddressStreet` are removed as they will not be useful in analysis or prediction because they're all unique and non-numeric. `AddressState` only had the value "Texas". `isZillowOwned` is only FALSE as Zillow does not own any of the properties. `badgeInfo` is undefined and is NULL. `pgapt` is all "For Sale". 
+Features from the dataset have been removed for this analysis. The feature `unformattedPrice` is removed because it is the same as `price`. `address` and `addressStreet` are removed as they will not be useful in analysis or prediction because they're all unique and non-numeric. `addressState` only had the value "Texas". `isZillowOwned` is only FALSE as Zillow does not own any of the properties. `badgeInfo` is undefined and is NULL. `pgapt` is all "For Sale".
+`info3string` is a link to a picture of a house.
 
+```{r subsetted data, echo = F}
+zillow_dat <- data %>%
+  select(!c(unformattedPrice, address, addressStreet, addressState,
+         isZillowOwned, badgeInfo, pgapt, info3String))
 
-```{r}
-hist(zillow.dat$price)
+head(zillow_dat)
+```
+
+```{r hist of price feat}
+# hist(zillow_dat$price)
 ```
 
 ## EDA
 
+
+### Checking Cities
+We did not need the `addressState` column because it only had one value: Texas. We might assume that `addressCity` is only Austin and remove the feature, but is there another city in the dataset?
+
+```{r check cities, echo = F, eval = F}
+zillow_dat %>%
+  # group by category
+  group_by(addressCity) %>% 
+  # Count the number of values assocuated with the category
+  summarize(n = n()) %>%
+  # Most listings first
+  arrange(desc(n))
+```
+|City| Listings|
+|----|---------|
+|Austin|	786			
+|Del Valle|	8			
+|Pflugerville|	3			
+|Lakeway|	1			
+|Manor|	1			
+|Terlingua|	1	
+
+There are a few other cities represented in this dataset, so we will keep this column for now.
+
+### Top Brokers
 First, let's look at the top 5 brokers with the most listings.
 
-```{r}
-zillow.dat %>%
+```{r, echo = F}
+top_5_brokers <- zillow_dat %>%
   # group by category
   group_by(brokerName) %>% 
   # Count any value (number of prices in this case)
   summarize(count_distinct = n_distinct(price)) %>%
   # Most listings first
-  arrange(desc(count_distinct)) 
-```
+  arrange(desc(count_distinct)) %>%
+  head(5)
 
+top_5_brokers
+```
+| Broker| Listings|
+|-------|---------|
+|Realty Austin|	73			
+|Keller Williams Realty|	67			
+|Compass RE Texas, LLC|	60			
+|Opendoor Brokerage, LLC|	32			
+|Moreland Properties|	29	
 
 ### References:
 
