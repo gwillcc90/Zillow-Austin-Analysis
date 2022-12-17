@@ -13,15 +13,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r libraries, echo = F, warning=F, message=F, include=F}
 library(dplyr, quietly = T)
+library(ggplot2, quietly = T)
 ```
 
 ## Introduction
 
-Austin, a hilly city due south in the middle of Texas, is where all the young, hip Texans and out-of-staters are converging to live. Other than its famous 6-th street nightlife, the "weird" city is home to many "corporate and regional headquarters" from companies like Dell, IBM, Facebook, VISA and many more [1] - these are some great reasons to "kick up the roots" and mosey on over to Austin! 
+Austin, a hilly city due south in the middle of Texas, is where all the young, hip Texans and out-of-staters are converging to live. Other than its famous $6^{th}$ street nightlife, the "weird" city is home to many "corporate and regional headquarters" from companies like Dell, IBM, Facebook, VISA and many more [1] - these are some great reasons to "kick up the roots" and mosey on over to Austin!
+Suppose you think that you are *just* young and hip enough to move out to Austin, you might want some insights on how the housing market is.
 
 ## Objective Statement
 
-The objective of this project is to make inferences about true statistic parameters in Austin, Texas, and to make predictions on housing prices and categories like which broker is listing the property.
+The objective of this project is to explore the dataset, make inferences about true statistic parameters in Austin, Texas, and to make predictions on housing prices and categories like "which broker is listing the property".
 
 ## Data Acquisition and Explanation
 
@@ -60,7 +62,7 @@ zillow_dat <- data %>%
   select(!c(unformattedPrice, address, addressStreet, addressState,
          isZillowOwned, badgeInfo, pgapt, info3String))
 
-head(zillow_dat)
+# head(zillow_dat)
 ```
 
 ```{r hist of price feat}
@@ -93,6 +95,62 @@ zillow_dat %>%
 
 There are a few other cities represented in this dataset, so we will keep this column for now.
 
+### Brand-New or Old house
+
+It is also interesting to know which houses are being sold and under construction, or are for sale by a broker.
+
+```{r new or old house (house type), echo = F}
+zillow_dat %>%
+  # group by category
+  group_by(sgapt) %>% 
+  # Count the number of values assocuated with the category
+  summarize(n = n()) %>%
+  # Most listings first
+  arrange(desc(n))
+```
+|Listing type| Listings|
+|----------|---------|
+|For Sale (Broker)|	755			
+|New Construction|	45
+
+Most of the houses for sale have already been built. Lets see if there is a price different between the types of listings.
+
+```{r listing type boxp, echo = F}
+ggplot(zillow_dat, aes(x = sgapt, y = log(price), fill = sgapt)) +
+  geom_boxplot() +
+  labs(x = 'Listing Type', y = 'Log price',
+       title = 'Log Price by Listing Type', fill = 'Listing type') +
+  theme(plot.title = element_text(size=20))
+```
+Looks like buying a new house tends to cost a bit more than one already for sale by a broker, but recall that this is the *log price*.
+
+So, let's look at the mean housing price of both listing types.
+
+```{r listing type means, echo = F}
+zillow_dat %>%
+  # group by category
+  group_by(sgapt) %>% 
+  # Count the number of values assocuated with the category
+  summarize(mean(price))
+```
+|Listing type| Mean price|
+|------------|-----------|
+|For Sale (Broker)|	915297.9			
+|New Construction|	1882131.2
+
+Looking at the mean price of the listing types is disheartening, not only do you have to be hip to live in Austin, but you have to be rich too? The mean prices of the two listing types are quite high. But we can employ some resampling techniques to see if the true means are really so high, or if the outliers are skewing the sample statistics.
+
+It might be worth looking at the normality of the data, even though we will use resampling.
+
+```{r histograms of listing types, echo = F, warning=F}
+ggplot(zillow_dat, aes(x = log(price))) + 
+  geom_histogram(binwidth = .1) +
+  facet_wrap(~sgapt)
+```
+
+ARE gouging for new houses?
+
+
 ### Top Brokers
 First, let's look at the top 5 brokers with the most listings.
 
@@ -124,7 +182,17 @@ by_top_5_brokers <- zillow_dat %>%
   filter(brokerName %in% top_5_brokers$brokerName)
 ```
 
+```{r box top 5 brokers, echo = F}
+ggplot(by_top_5_brokers, aes(x = brokerName, y = log(price), 
+                             fill = brokerName)) +
+  geom_boxplot() + 
+  coord_flip() + 
+  labs(title = 'Price Boxplots by Broker', y = 'Log price',
+       x = 'Broker name')
+```
 
+It looks like Moreland Properties is selling the houses with the highest prices. Moreland is also has the fewest listings likely because they're so high priced.
+Keller Williams, Austin Realty, and Compass RE look like they are doing similar business, though Compass has some huge outliers. If you are moving to the greater Austin area and your friend recommends using Moreland Properties, they probably think you are rich!
 
 ### References:
 
