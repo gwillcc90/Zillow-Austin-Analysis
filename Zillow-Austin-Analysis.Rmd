@@ -96,17 +96,18 @@ There are a few other cities represented in this dataset, so we will keep this c
 ### Top Brokers
 First, let's look at the top 5 brokers with the most listings.
 
-```{r, echo = F}
+```{r top 5 brokers, echo = F}
 top_5_brokers <- zillow_dat %>%
   # group by category
   group_by(brokerName) %>% 
-  # Count any value (number of prices in this case)
-  summarize(count_distinct = n_distinct(price)) %>%
+  # Count the number of values assocuated with the category
+  summarize(n = n()) %>%
   # Most listings first
-  arrange(desc(count_distinct)) %>%
+  arrange(desc(n)) %>%
   head(5)
 
-top_5_brokers
+# top_5_brokers
+# sum(top_5_brokers$n)
 ```
 | Broker| Listings|
 |-------|---------|
@@ -115,6 +116,15 @@ top_5_brokers
 |Compass RE Texas, LLC|	60			
 |Opendoor Brokerage, LLC|	32			
 |Moreland Properties|	29	
+
+Other than Keller Williams Realty, the other brokers are not huge names if you are not into the housing market. Let's explore the data relative to the top 5 brokers.
+
+```{r subsetting brokers, echo = F}
+by_top_5_brokers <- zillow_dat %>%
+  filter(brokerName %in% top_5_brokers$brokerName)
+```
+
+
 
 ### References:
 
