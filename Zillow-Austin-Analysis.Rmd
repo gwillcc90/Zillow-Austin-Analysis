@@ -2,25 +2,74 @@
 title: "Analysis of Zillow Data from Austin, Texas"
 author: "Will Curkan"
 date: "2022-12-16"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r libraries, echo = F, warning=F}
+library(dplyr)
+```
+
 ## Introduction
 
 Austin, a hilly city due south in the middle of Texas, is where all the young, hip Texans and out-of-staters are converging to live. Other than its famous 6-th street nightlife, the "weird" city is home to many "corporate and regional headquarters" from companies like Dell, IBM, Facebook, VISA and many more [1] - these are some great reasons to "kick up the roots" and mosey on over to Austin! 
 
+## Objective Statement
+
+The objective of this project is to make inferences about true statistic parameters in Austin, Texas, and to make predictions on housing prices and categories like which broker is listing the property.
+
 ## Data Acquisition and Explanation
 
-Alex Huggler on Kaggle.com provides Zillow Housing data for November 2022 on Kaggle.com [2]. 
-
-```{r echo = F}
+```{r load data, echo = F}
 zillow.dat <- read.csv('Zillow_Austin_11-16-22.csv')
+head(zillow.dat)
+# dim(zillow.dat)
+```
+Alex Huggler on Kaggle.com provides Zillow Housing data for November 2022 on Kaggle.com [2]. The data has 800 unique observations and 20 features: one observation per unique housing unit and each feature as some trait of the house like its zip code or number of bedrooms.
+
+### Feature Descriptions
+
+The following features will be used in analysis of Austin housing prices:
+
+|Feature|Description|
+|-------|-----------|
+|Price| price of housing|
+|AddressCity|%%%%%%%%%%%%%%%
+|AddressZip|
+|beds|
+|baths|
+|area|
+|latitude|
+|longitude|
+|variableData|%%%%%%%%%%
+|pgapt|%%%%%%%%%%%%%%%
+|sgapt|
+|zestimate|
+|info3string|%%%%%%%
+|brokerName|
+
+Features from the dataset have been removed for this analysis. The feature `PriceUnformatted` is removed because it is the same as `Price`. `Address` and `AddressStreet` are removed as they will not be useful in analysis or prediction because they're all unique and non-numeric. `AddressState` only had the value "Texas". `isZillowOwned` is only FALSE as Zillow does not own any of the properties. `badgeInfo` is undefined and is NULL.
+
+
+```{r}
+hist(zillow.dat$price)
 ```
 
+## EDA
+
+First, looking at 
+
+```{r}
+zillow.dat %>%
+  group_by(brokerName) %>%
+  summarize(count_distinct = n_distinct(price)) %>%
+  arrange(desc(count_distinct))
+```
 
 
 ### References:
