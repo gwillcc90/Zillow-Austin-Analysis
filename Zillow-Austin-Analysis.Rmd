@@ -174,14 +174,19 @@ outlier_listing <- zillow_dat %>%
 
 Let's look at an estimate for the true mean house prices of both listing types.
 
-```{r bootstrap Broker sale, echo = F}
+```{r bootstrap mean Broker sale, echo = F, eval = F}
+################## Bootstrap percentile technique #####################
+#######################################################################
 subset_brokerSale <- zillow_dat %>%
   filter(sgapt == 'For Sale (Broker)') %>%
   select(price)
 
+subset_brokerSale <- as.numeric(unlist(subset_brokerSale))
+# class(subset_brokerSale)
+
 # Length (number) of observations
 # Dataframe will use nrow instead of length
-n <- nrow(subset_brokerSale)
+n <- length(subset_brokerSale)
 
 # Resample iterations
 N <- 10^4
@@ -199,6 +204,14 @@ for(i in 1:N)
 }
 
 quantile(boot.mean, c(.025,.975))
+
+abs((mean(boot.mean) - 915297.9) / sd(boot.mean))
+```
+We are 95% confident in saying that the true mean housing price in Austin is between (820715.3 1021421.0) and our bias percentage shows the sample mean may well represent the true mean, with the bias being only .6%. But we actually want people to move to Austin, so let's check out the median and see if we get a more reasonable price.
+
+
+```{r}
+
 ```
 
 ARE gouging for new houses?
