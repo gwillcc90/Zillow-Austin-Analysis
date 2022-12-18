@@ -41,16 +41,16 @@ The following features will be used in analysis of Austin housing prices:
 
 |Feature|Description|
 |-------|-----------|
-|Price| price of housing|
-|AddressCity| City name|
-|AddressZip| Zip code|
+|price| price of housing|
+|addressCity| City name|
+|addressZip| Zip code|
 |beds| Number of beds|
 |baths| Number of baths|
 |area| Sq. foot|
 |latitude| Latitude|
 |longitude| Longitude|
 |variableData| String of description from Zillow|
-|sgapt| For Sale by broker OR new construction (cat)|
+|sgapt| For Sale by broker OR new construction (categ.)|
 |zestimate| Zillow how price estimate|
 |brokerName| Who sells the house|
 
@@ -99,7 +99,7 @@ There are a few other cities represented in this dataset, so we will keep this c
 
 It is also interesting to know which houses are being sold and under construction, or are for sale by a broker.
 
-```{r new or old house (house type), echo = F}
+```{r new or old house (house type), echo = F, eval = F}
 zillow_dat %>%
   # group by category
   group_by(sgapt) %>% 
@@ -122,11 +122,11 @@ ggplot(zillow_dat, aes(x = sgapt, y = log(price), fill = sgapt)) +
        title = 'Log Price by Listing Type', fill = 'Listing type') +
   theme(plot.title = element_text(size=20))
 ```
-Looks like buying a new house tends to cost a bit more than one already for sale by a broker, but recall that this is the *log price*.
+Looks like buying a new house tends to cost more than one already for sale by a broker, but recall that this is the *log price*.
 
 So, let's look at the mean housing price of both listing types.
 
-```{r listing type means, echo = F}
+```{r listing type means, echo = F, eval = F}
 zillow_dat %>%
   # group by category
   group_by(sgapt) %>% 
@@ -135,17 +135,70 @@ zillow_dat %>%
 ```
 |Listing type| Mean price|
 |------------|-----------|
-|For Sale (Broker)|	915297.9			
-|New Construction|	1882131.2
+|For Sale (Broker)|	915,297.9			
+|New Construction|	1,882,131.2
 
-Looking at the mean price of the listing types is disheartening, not only do you have to be hip to live in Austin, but you have to be rich too? The mean prices of the two listing types are quite high. But we can employ some resampling techniques to see if the true means are really so high, or if the outliers are skewing the sample statistics.
+Looking at the mean price of the listing types is disheartening, not only do you have to be hip to live in Austin, but you have to be rich too? The mean prices of the two listing types are quite high, and we see from the boxplot that the data is skewed, so let's employ some resampling techniques to get an estimate on the true mean house prices.
 
-It might be worth looking at the normality of the data, even though we will use resampling.
+It might be worth taking a closer look at the normality of the data.
 
-```{r histograms of listing types, echo = F, warning=F}
+```{r Histograms of Listing Types, echo = F, warning=F}
 ggplot(zillow_dat, aes(x = log(price))) + 
   geom_histogram(binwidth = .1) +
-  facet_wrap(~sgapt)
+  facet_wrap(~sgapt) +
+  labs(title = 'Facet Histograms of Listing Types',
+       x = 'Log price', y = 'Frequency')
+```
+
+We can already observe the skewedness of the Broker sale data from the boxplot, but it is hard to tell the shape of the "New Construction" data.
+
+```{r New Construction Listing Hist, echo = F}
+options(scipen=5) # Remove scientific notation from histogram
+ggplot(subset(zillow_dat, sgapt == 'New Construction'),
+       aes(x = price)) + geom_histogram(bins = 100) +
+  labs(title = "Histogram of 'New Construction' Listing Prices",
+       x = 'Price', y = 'Frequency')
+  
+```
+
+So, there are quite a few houses over the million dollar price range... And the most expensive house is $11,250,800. These probably for Elon Musk and his pals, though.
+
+```{r Huge outlier listing in New Construction, echo = F, eval = F}
+outlier_listing <- zillow_dat %>%
+  filter(sgapt == 'New Construction') %>%
+  arrange(desc(price)) %>%
+  head(1)
+
+# outlier_listing$price
+```
+
+Let's look at an estimate for the true mean house prices of both listing types.
+
+```{r bootstrap Broker sale, echo = F}
+subset_brokerSale <- zillow_dat %>%
+  filter(sgapt == 'For Sale (Broker)') %>%
+  select(price)
+
+# Length (number) of observations
+# Dataframe will use nrow instead of length
+n <- nrow(subset_brokerSale)
+
+# Resample iterations
+N <- 10^4
+
+# Bootstrap mean container
+boot.mean <- numeric(N)
+
+# Bootstrap
+for(i in 1:N)
+{
+  # Resample
+  x <- sample(subset_brokerSale, n, replace = T)
+  # Bootstrap means
+  boot.mean[i] <- mean(x)
+}
+
+quantile(boot.mean, c(.025,.975))
 ```
 
 ARE gouging for new houses?
