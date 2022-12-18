@@ -181,6 +181,8 @@ subset_brokerSale <- zillow_dat %>%
   filter(sgapt == 'For Sale (Broker)') %>%
   select(price)
 
+obs.mean <- mean(subset_brokerSale)
+
 subset_brokerSale <- as.numeric(unlist(subset_brokerSale))
 # class(subset_brokerSale)
 
@@ -193,6 +195,8 @@ N <- 10^4
 
 # Bootstrap mean container
 boot.mean <- numeric(N)
+# Bootstrap median container
+boot.meds <- numeric(N)
 
 # Bootstrap
 for(i in 1:N)
@@ -201,6 +205,8 @@ for(i in 1:N)
   x <- sample(subset_brokerSale, n, replace = T)
   # Bootstrap means
   boot.mean[i] <- mean(x)
+  # Bootstrap medians
+  boot.meds[i] <- median(x)
 }
 
 # quantile(boot.mean, c(.025,.975))
@@ -211,12 +217,27 @@ for(i in 1:N)
 graphics::hist(boot.mean, main = 'Bootstrap Distribution of Means', xlab = 'Means')
 ```
 
-We are 95% confident in saying that the true mean housing price in Austin is between (820715.3 1021421.0) and our bias percentage shows the sample mean may well represent the true mean, with the bias being only .6%. But we actually want people to move to Austin, so let's check out the median and see if we get a more reasonable price.
+We are 95% confident in saying that the true mean housing price in Austin is between (820715.3 1021421.0) and our bias percentage shows the sample mean may well represent the true mean, with the bias being only .6%. But we actually want people to move to Austin, so let's check out the bootstrap distribution of the median and see if we get a more reasonable price.
 
 
-```{r}
-
+```{r boostrap percentile medians, echo = F, eval = F}
+# Observed median
+obs.med <- median(subset_brokerSale)
+# 95% CI for true median
+quantile(boot.meds, c(.025,.975))
+# bias percentage on median
+abs((mean(boot.meds) - 575000) / sd(boot.meds))
 ```
+
+```{r boot distn of median}
+graphics::hist(boot.meds, main = 'Bootstrap Distribution of Medians', xlab = 'Medians')
+```
+
+We are 95% confident that (549000 599000) is one of the infinitely many 95% CIs that contain the true median house price. Our bias percentage is kind of high, at 10.89% biased. Anyway, around 500k - 600k for a house sounds a lot better than an average of 900k.
+
+How does this compare to newly constructed houses? We saw that the average price for newly constructed housing units was approximately double that of ones for sale by a broker. Let's get some metrics on newly constructed house listings.
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&7
 
 ARE gouging for new houses?
 
