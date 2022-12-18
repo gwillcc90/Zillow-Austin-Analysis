@@ -18,7 +18,7 @@ library(ggplot2, quietly = T)
 
 ## Introduction
 
-Austin, a hilly city due south in the middle of Texas, is where all the young, hip Texans and out-of-staters are converging to live. Other than its famous $6^{th}$ street nightlife, the "weird" city is home to many "corporate and regional headquarters" from companies like Dell, IBM, Facebook, VISA and many more [1] - these are some great reasons to "kick up the roots" and mosey on over to Austin!
+Austin, a hilly city due south in the middle of Texas, is where all the young, hip Texans and out-of-staters are converging to live. Other than its famous $6^{th}$ street nightlife, the "weird" city is home to many "corporate and regional headquarters" of companies like Dell, IBM, Facebook, VISA and many more [1] - these are some great reasons to "kick up the roots" and mosey on over to Austin!
 Suppose you think that you are *just* young and hip enough to move out to Austin, you might want some insights on how the housing market is.
 
 ## Objective Statement
@@ -181,10 +181,10 @@ subset_brokerSale <- zillow_dat %>%
   filter(sgapt == 'For Sale (Broker)') %>%
   select(price)
 
-obs.mean <- mean(subset_brokerSale)
-
 subset_brokerSale <- as.numeric(unlist(subset_brokerSale))
 # class(subset_brokerSale)
+
+obs.mean <- mean(subset_brokerSale)
 
 # Length (number) of observations
 # Dataframe will use nrow instead of length
@@ -229,7 +229,7 @@ quantile(boot.meds, c(.025,.975))
 abs((mean(boot.meds) - 575000) / sd(boot.meds))
 ```
 
-```{r boot distn of median}
+```{r boot distn of median, echo = F, fig.height=4, fig.width=5}
 graphics::hist(boot.meds, main = 'Bootstrap Distribution of Medians', xlab = 'Medians')
 ```
 
