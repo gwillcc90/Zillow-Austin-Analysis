@@ -16,7 +16,7 @@ library(dplyr, quietly = T)
 library(ggplot2, quietly = T)
 ```
 
-## Introduction
+# Introduction
 
 Austin, a hilly city due south in the middle of Texas, is where all the young, hip Texans and out-of-staters are converging to live. Other than its famous $6^{th}$ street nightlife, the "weird" city is home to many "corporate and regional headquarters" of companies like Dell, IBM, Facebook, VISA and many more [1] - these are some great reasons to "kick up the roots" and mosey on over to Austin!
 Suppose you think that you are *just* young and hip enough to move out to Austin, you might want some insights on how the housing market is.
@@ -33,7 +33,7 @@ data <- read.csv('Zillow_Austin_11-16-22.csv')
 #head(data)
 #dim(data)
 ```
-Alex Huggler on Kaggle.com provides Zillow Housing data for November 2022 on Kaggle.com [2]. The data has 800 unique observations and 20 features: one observation per unique housing unit and each feature as some trait of the house like its zip code or number of bedrooms.
+The user Alex Huggler on Kaggle.com provides Zillow Housing data for November 2022 on [2]. The data has 800 unique observations and 20 features: one observation per unique housing unit and each feature as some trait of the house like its zip code or number of bedrooms.
 
 ### Feature Descriptions
 
@@ -41,18 +41,18 @@ The following features will be used in analysis of Austin housing prices:
 
 |Feature|Description|
 |-------|-----------|
-|price| price of housing|
+|price| Price of housing|
 |addressCity| City name|
 |addressZip| Zip code|
 |beds| Number of beds|
 |baths| Number of baths|
-|area| Sq. foot|
+|area| Sq. footage|
 |latitude| Latitude|
 |longitude| Longitude|
 |variableData| String of description from Zillow|
 |sgapt| For Sale by broker OR new construction (categ.)|
-|zestimate| Zillow how price estimate|
-|brokerName| Who sells the house|
+|zestimate| Zillow price estimate|
+|brokerName| Broker (seller) name|
 
 Features from the dataset have been removed for this analysis. The feature `unformattedPrice` is removed because it is the same as `price`. `address` and `addressStreet` are removed as they will not be useful in analysis or prediction because they're all unique and non-numeric. `addressState` only had the value "Texas". `isZillowOwned` is only FALSE as Zillow does not own any of the properties. `badgeInfo` is undefined and is NULL. `pgapt` is all "For Sale".
 `info3string` is a link to a picture of a house.
@@ -113,7 +113,7 @@ zillow_dat %>%
 |For Sale (Broker)|	755			
 |New Construction|	45
 
-Most of the houses for sale have already been built. Lets see if there is a price different between the types of listings.
+Most of the houses for sale have already been built. Lets see if there is a price difference between the types of listings.
 
 ```{r listing type boxp, echo = F}
 ggplot(zillow_dat, aes(x = sgapt, y = log(price), fill = sgapt)) +
@@ -122,7 +122,7 @@ ggplot(zillow_dat, aes(x = sgapt, y = log(price), fill = sgapt)) +
        title = 'Log Price by Listing Type', fill = 'Listing type') +
   theme(plot.title = element_text(size=20))
 ```
-Looks like buying a new house tends to cost more than one already for sale by a broker, but recall that this is the *log price*.
+Looks like buying a new house tends to cost more than one already for sale by a broker. Recall this is the log price.
 
 So, let's look at the mean housing price of both listing types.
 
@@ -214,10 +214,10 @@ for(i in 1:N)
 ```
 
 ```{r hist of bootstrap means, echo = F, fig.height=4, fig.width=5}
-graphics::hist(boot.mean, main = 'Bootstrap Distribution of Means', xlab = 'Means')
+graphics::hist(boot.mean, main = 'Bootstrap Distribution of Means \n For Broker Sales', xlab = 'Means')
 ```
 
-We are 95% confident in saying that the true mean housing price in Austin is between (820715.3 1021421.0) and our bias percentage shows the sample mean may well represent the true mean, with the bias being only .6%. But we actually want people to move to Austin, so let's check out the bootstrap distribution of the median and see if we get a more reasonable price.
+We are 95% confident in saying that the true mean housing price in Austin is between (820715.3 1021421.0) and our bias percentage shows the sample mean may well represent the true mean, with the bias being only .6%. But we actually want people to move to Austin and the mean isn't the best descriptor in this case, so let's check out the bootstrap distribution of the median and see if we get a more reasonable price.
 
 
 ```{r boostrap percentile medians, echo = F, eval = F}
@@ -230,16 +230,67 @@ abs((mean(boot.meds) - 575000) / sd(boot.meds))
 ```
 
 ```{r boot distn of median, echo = F, fig.height=4, fig.width=5}
-graphics::hist(boot.meds, main = 'Bootstrap Distribution of Medians', xlab = 'Medians')
+graphics::hist(boot.meds, main = 'Bootstrap Distribution of Medians \n For Broker Sales', xlab = 'Medians')
 ```
 
 We are 95% confident that (549000 599000) is one of the infinitely many 95% CIs that contain the true median house price. Our bias percentage is kind of high, at 10.89% biased. Anyway, around 500k - 600k for a house sounds a lot better than an average of 900k.
 
-How does this compare to newly constructed houses? We saw that the average price for newly constructed housing units was approximately double that of ones for sale by a broker. Let's get some metrics on newly constructed house listings.
+How does this compare to newly constructed houses? We saw that the average price for newly constructed housing units was approximately double that of ones for sale by a broker. Since the median looks like a better estimator, let's look at the median for newly constructed houses.
 
-&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&7
+```{r bootstrapping stats on New Construction, echo = F}
+################## Bootstrap percentile technique #####################
+#######################################################################
+subset_new_constr <- zillow_dat %>%
+  filter(sgapt == 'New Construction') %>%
+  select(price)
 
-ARE gouging for new houses?
+subset_new_constr <- as.numeric(unlist(subset_new_constr))
+# class(subset_brokerSale)
+
+obs.mean <- mean(subset_new_constr)
+
+# Length (number) of observations
+# Dataframe will use nrow instead of length
+n <- length(subset_new_constr)
+
+# Resample iterations
+N <- 10^4
+
+# Bootstrap mean container
+boot.mean <- numeric(N)
+# Bootstrap median container
+boot.meds <- numeric(N)
+
+# Bootstrap
+for(i in 1:N)
+{
+  # Resample
+  x <- sample(subset_new_constr, n, replace = T)
+  # Bootstrap means
+  # boot.mean[i] <- mean(x)
+  # Bootstrap medians
+  boot.meds[i] <- median(x)
+}
+
+# quantile(boot.mean, c(.025,.975))
+# abs((mean(boot.mean) - obs.mean) / sd(boot.mean))
+
+# graphics::hist(boot.mean, main = 'Bootstrap Distribution of Means \n For Broker Sales', xlab = 'Means')
+
+# Observed median
+obs.med <- median(subset_new_constr)
+# 95% CI for true median
+quantile(boot.meds, c(.025,.975))
+# bias percentage on median
+abs((mean(boot.meds) - obs.med) / sd(boot.meds))
+
+graphics::hist(boot.meds, main = 'Bootstrap Distribution of Medians \n For Broker Sales', xlab = 'Medians')
+
+```
+
+The median is highly skewed, the interval estimate from the 95% CI has an enormous range, and the bias percentage is approximately 50% (.4786609), so this sample does not seem representative of the true population of newly constructed house prices.
+
+Could perform hypothesis test on 600k median claim from google.
 
 
 ### Top Brokers
