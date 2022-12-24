@@ -291,7 +291,7 @@ The median is highly skewed, the interval estimate from the 95% CI has an enormo
 
 Let's perform one more test on median housing price. The website realtor.com claims that, in November 2022, the median housing price was 600k USD [3]. We will use both listing types for the test. We will test the hypotheses:
 
-$H_0: \tilde{\mu} <= 600,000$
+$H_0: \tilde{\mu} <= 600,000$ versus 
 $H_A: \tilde{\mu} > 600,000$
 
 ```{r hypothesis test of 600k median claim, echo = F}
@@ -314,16 +314,22 @@ for(i in 1:N)
   boot.med.full[i] <- median(x)
 }
 
-( sum(boot.med.full >= obs.med) + 1) / (N + 1)
+# p-value
+# ( sum(boot.med.full >= obs.med) + 1) / (N + 1)
 
 ```
 
-Given the data, we fail to reject the null hypothesis at any small level of significance and say that *there is not statistically significant evidence to contradict the claim that the median house price is more than 600k.*
+The p-value, being the probability that the statistic occurs randomly, is approximately 50.32%. Given the data, we fail to reject the null hypothesis at any small level of significance $\alpha$ and say that *there is not statistically significant evidence to contradict the claim that the median house price is more than 600k.*
 
-So, we're fairly certain we could find some options under 600k. Austin seems like "the spot", though, so we may be willing to dish out the cash for a "spot at the spot".
+So, we're fairly certain we could find some options under 600k. Austin seems like "the spot", though, so we may be willing to dish out some extra Quiche for a "spot at the spot".
 
 ### Top Brokers
-First, let's look at the top 5 brokers with the most listings.
+
+Of course, life isn't all butterflies and candy: we have to make Quiche (cash), buy property, maintain the property... I digress.
+
+Let's see which brokers we should call up to get a decent deal.
+
+We think maybe we should go with the brands selling the most properties, as the buying process may be easier and the price may be lower. The Brokers with the most listings are:
 
 ```{r top 5 brokers, echo = F}
 top_5_brokers <- zillow_dat %>%
@@ -335,9 +341,12 @@ top_5_brokers <- zillow_dat %>%
   arrange(desc(n)) %>%
   head(5)
 
+# top_5_brokers$brokerName
+
 # top_5_brokers
 # sum(top_5_brokers$n)
 ```
+
 | Broker| Listings|
 |-------|---------|
 |Realty Austin|	73			
@@ -362,8 +371,18 @@ ggplot(by_top_5_brokers, aes(x = brokerName, y = log(price),
        x = 'Broker name')
 ```
 
-It looks like Moreland Properties is selling the houses with the highest prices. Moreland is also has the fewest listings likely because they're so high priced.
+It looks like Moreland Properties has the highest variation in house prices. Moreland is also has the fewest listings likely because they're so high priced.
+
+```{r median house price by broker, echo = F}
+zillow_dat %>%
+  filter(brokerName %in% top_5_brokers$brokerName) %>%
+  group_by(brokerName) %>%
+  summarize(median = median(price))
+```
+
 Keller Williams, Austin Realty, and Compass RE look like they are doing similar business, though Compass has some huge outliers. If you are moving to the greater Austin area and your friend recommends using Moreland Properties, they probably think you are rich!
+
+
 
 ### References:
 
