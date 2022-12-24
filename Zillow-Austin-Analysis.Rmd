@@ -289,12 +289,36 @@ graphics::hist(boot.meds, main = 'Bootstrap Distribution of Medians \n For Broke
 
 The median is highly skewed, the interval estimate from the 95% CI has an enormous range, and the bias percentage is approximately 50% (.4786609), so it is not wise to trust population parameters for new houses coming from this sample.
 
-Could perform hypothesis test on 600k median claim from google.
+Let's perform one more test on median housing price. The website realtor.com claims that, in November 2022, the median housing price was 600k USD. We will use both listing types for the test. We will test the hypotheses:
+
+$H_0: \tilde{\mu} <= 600,000$
+$H_A: \tilde{\mu} > 600,000$
 
 ```{r hypothesis test of 600k median claim, echo = F}
+# Observed median housing price
+# for both listing types
+obs.med <- median(zillow_dat$price)
+
+# Sample size
+n <- length(zillow_dat$price)
+
+# Bootstrap iters
+N <- 10^4
+
+# Container
+boot.med.full <- numeric(N)
+
+for(i in 1:N)
+{
+  x <- sample(zillow_dat$price, n, replace = T)
+  boot.med.full[i] <- median(x)
+}
+
+( sum(boot.med.full >= obs.med) + 1) / (N + 1)
 
 ```
 
+Given the data, we fail to reject the null hypothesis at any small level of significance and say that *there is not statistically significant evidence to contradict the claim that the median house price is more than 600k.*
 
 ### Top Brokers
 First, let's look at the top 5 brokers with the most listings.
