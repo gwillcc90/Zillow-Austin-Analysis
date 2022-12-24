@@ -289,7 +289,7 @@ graphics::hist(boot.meds, main = 'Bootstrap Distribution of Medians \n For Broke
 
 The median is highly skewed, the interval estimate from the 95% CI has an enormous range, and the bias percentage is approximately 50% (.4786609), so it is not wise to trust population parameters for new houses coming from this sample.
 
-Let's perform one more test on median housing price. The website realtor.com claims that, in November 2022, the median housing price was 600k USD. We will use both listing types for the test. We will test the hypotheses:
+Let's perform one more test on median housing price. The website realtor.com claims that, in November 2022, the median housing price was 600k USD [3]. We will use both listing types for the test. We will test the hypotheses:
 
 $H_0: \tilde{\mu} <= 600,000$
 $H_A: \tilde{\mu} > 600,000$
@@ -319,6 +319,8 @@ for(i in 1:N)
 ```
 
 Given the data, we fail to reject the null hypothesis at any small level of significance and say that *there is not statistically significant evidence to contradict the claim that the median house price is more than 600k.*
+
+So, we're fairly certain we could find some options under 600k. Austin seems like "the spot", though, so we may be willing to dish out the cash for a "spot at the spot".
 
 ### Top Brokers
 First, let's look at the top 5 brokers with the most listings.
@@ -368,3 +370,5 @@ Keller Williams, Austin Realty, and Compass RE look like they are doing similar 
 [1] https://www.austinchamber.com/economic-development/key-industries/corporate-headquarters
 
 [2] https://www.kaggle.com/datasets/alexhuggler/austin-zillow-houses-for-sale
+
+[3] https://www.realtor.com/realestateandhomes-search/Austin_TX/overview
