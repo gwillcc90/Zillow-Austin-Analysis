@@ -451,7 +451,7 @@ merge(x=data,y=data2,
 Now we're talking. We see some big, median-priced houses. Of course it may be smarter to go cheaper, but this works for now.
 
 
-```{r bootstrap}
+```{r bootstrap usd_per_sqfoot INCOMPLETE, echo = F, eval = F}
 boot.mean <- numeric(N)
 
 for(i in 1:N)
@@ -465,17 +465,11 @@ for(i in 1:N)
 
 quantile(boot.mean, c(.025, .975))
 
-
-```
-
-Let's look to minimize our cost per square foot and maximize the area of our property.
-
-```{r}
 plot(zillow_dat$usd_per_sqfoot, log(zillow_dat$price))
 
 plot(zillow_dat$usd_per_sqfoot, zillow_dat$area)
+#Let's look to minimize our cost per square foot and maximize the area of our property.
 ```
-
 
 
 End note: The `area` feature should be filled intelligently because the analysis isn't as good as it could be.
