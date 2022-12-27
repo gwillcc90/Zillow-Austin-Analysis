@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r libraries, echo = F, warning=F, message=F, include=F}
 library(dplyr, quietly = T)
 library(ggplot2, quietly = T)
+library(tidyselect)
 ```
 
 # Introduction
@@ -288,7 +289,7 @@ abs((mean(boot.meds) - obs.med) / sd(boot.meds))
 
 The median is highly skewed, the interval estimate from the 95% CI has an enormous range, and the bias percentage is approximately 50% (.4786609), so it is not wise to trust population parameters for new houses coming from this sample.
 
-Let's perform one more test on median housing price. The website realtor.com claims that, in November 2022, the median housing price was 600k USD [3]. We will use both listing types for the test. We will test the hypotheses:
+Let's perform one more test on median housing price. The website realtor.com claims that, in November 2022, the median housing price was 600k USD [3]. If the price is 600k or less, that is great for buyers. If not, then their claim is not accurate. We will use both listing types for the test. We will test the hypotheses:
 
 $H_0: \tilde{\mu} <= 600,000$ versus 
 $H_A: \tilde{\mu} > 600,000$
@@ -327,15 +328,13 @@ The p-value, being the probability that the statistic occurs randomly, is approx
 
 Of course, life isn't all butterflies and candy: we have to make Quiche Lorraine, buy property, maintain the property... I digress.
 
-Let's see which brokers we should call up to get a decent deal.  ---
-
 The bias percentages were quite high for the types of listings, so it may not truly matter if we choose newly constructed houses or older ones; let's just look at choosing a broker.
 
 We think maybe we should go with the brands selling the most properties, as the buying process may be easier and the price may be lower. The Brokers with the most listings are:
 
 ```{r top 5 brokers, echo = F}
 # Vector of names of top 5 brokers
-top_5_brokers_vec <- zillow_dat %>%
+top_5_brokers <- zillow_dat %>%
   # group by category
   group_by(brokerName) %>% 
   # Count the number of values assocuated with the category
@@ -376,7 +375,7 @@ ggplot(by_top_5_brokers, aes(x = brokerName, y = log(price),
        x = 'Broker name')
 ```
 
-It looks like Moreland Properties has the highest variation in house prices. Moreland also has the fewest listings, likely because they're so high priced.
+It looks like Moreland Properties has the highest variation in house prices. Moreland also has the fewest listings, likely because they're so high priced. If you are moving to the greater Austin area and your friend recommends using Moreland Properties, they probably think you are rich!
 
 ```{r median house price by broker, echo = F}
 medians_by_broker <- zillow_dat %>%
@@ -385,7 +384,7 @@ medians_by_broker <- zillow_dat %>%
   summarize(median = median(price))
 ```
 
-Keller Williams, Austin Realty, and Compass RE look like they are doing similar business, though Compass has some huge outliers. If you are moving to the greater Austin area and your friend recommends using Moreland Properties, they probably think you are rich!
+Keller Williams, Austin Realty, and Compass RE look like they are doing similar business, though Compass has some huge outliers.
 
 The median house prices by broker:
 
@@ -395,7 +394,52 @@ The median house prices by broker:
 |Keller Williams Realty|	550000		
 |Compass RE Texas, LLC|	699000			
 |Opendoor Brokerage, LLC|	396000			
-|Moreland Properties|	1830000	
+|Moreland Properties|	1830000
+
+The median for all brokers, besides Moreland Properties, seem reasonable for Austin, Texas, given the claim from realty.com holds true for November 2022.
+
+Getting the most bang-for-our-buck is a good idea as settling down and having a family is typical human behavior. Let's look to do the following:
+
+1. Find the cost per square footage
+ - Create a new feature that is the ratio of area (square footage) to the price; USD cost per square foot; usd_per_sqfoot
+ - $usd\_per\_sqfoot = \frac{area}{price}$
+ 
+2. Find the ratio of the cost per square foot (usd_per_sqfoot) to the full housing price
+ - Create a new feature that is the $cost\_ratio = \frac{usd\_per\_sqfoot}{price}$ 
+
+A house with a low `cost_ratio` is preferable?
+
+```{r new_feature cost per sqfoot, echo = F}
+
+zillow_dat$usd_per_sqfoot <- zillow_dat$price / zillow_dat$area
+head(zillow_dat)
+zillow_dat[is.na(zillow_dat$usd_per_sqfoot),] <- 0
+
+mean(zillow_dat$usd_per_sqfoot)
+
+boot.mean <- numeric(N)
+
+for(i in 1:N)
+{
+  x <- sample(zillow_dat$usd_per_sqfoot,
+              length(zillow_dat$usd_per_sqfoot),
+              replace = T)
+
+  boot.mean[i] <- mean(x)
+}
+
+quantile(boot.mean, c(.025, .975))
+
+
+```
+
+Let's look to minimize our cost per square foot and maximize the area of our property.
+
+```{r}
+plot(zillow_dat$usd_per_sqfoot, log(zillow_dat$price))
+
+plot(zillow_dat$usd_per_sqfoot, zillow_dat$area)
+```
 
 
 
