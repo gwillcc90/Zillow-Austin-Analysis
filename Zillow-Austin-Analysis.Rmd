@@ -31,7 +31,7 @@ The objective of this project is to explore the dataset, make inferences about t
 ```{r load data, echo = F}
 set.seed(2022)
 data <- read.csv('Zillow_Austin_11-16-22.csv')
-#head(data)
+# head(data)
 #dim(data)
 ```
 The user Alex Huggler on Kaggle.com provides Zillow Housing data for November 2022 [2]. The data has 800 unique observations and 20 features: one observation per unique housing unit and each feature as some trait of the house like its zip code or number of bedrooms.
@@ -56,7 +56,7 @@ The following features will be used in analysis of Austin housing prices:
 |brokerName| Broker (seller) name|
 
 Features from the dataset have been removed for this analysis. The feature `unformattedPrice` is removed because it is the same as `price`. `address` and `addressStreet` are removed as they will not be useful in analysis or prediction because they're all unique and non-numeric. `addressState` only had the value "Texas". `isZillowOwned` is only FALSE as Zillow does not own any of the properties. `badgeInfo` is undefined and is NULL. `pgapt` is all "For Sale".
-`info3string` is a link to a picture of a house.
+`info3string` is a link to a broker logo pictures.
 
 ```{r subsetted data, echo = F}
 zillow_dat <- data %>%
@@ -429,14 +429,26 @@ zillow_dat$cost_ratio <- zillow_dat$usd_per_sqfoot / zillow_dat$price
 ```{r lowest cost ratios are biggest houses, echo = F}
 zillow_dat %>%
   arrange(cost_ratio) %>%
+  select(price, cost_ratio, area, beds, baths, usd_per_sqfoot,2) %>%
   head(10)
 ```
 
 It turns out the most expensive houses are the best deal on the ratio of cost per square foot to the total cost, so we should set a limit that we only want to look at houses under, say 750,000$
 
 ```{r look at cost ratio for houses under 750k, echo = F}
+data2 <- zillow_dat %>%
+  arrange(cost_ratio) %>%
+  filter(price <= 750000) %>%
+  select(price, cost_ratio, area, beds, baths, usd_per_sqfoot, latitude,
+         longitude) %>%
+  head(10)
 
+merge(x=data,y=data2, 
+             by=c("latitude","longitude")) %>%
+  select(address)
 ```
+
+Now we're talking. We see some big, median-priced houses. Of course it may be smarter to go cheaper, but this works for now.
 
 
 ```{r bootstrap}
