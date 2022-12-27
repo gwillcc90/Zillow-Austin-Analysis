@@ -407,16 +407,39 @@ Getting the most bang-for-our-buck is a good idea as settling down and having a 
 2. Find the ratio of the cost per square foot (usd_per_sqfoot) to the full housing price
  - Create a new feature that is the $cost\_ratio = \frac{usd\_per\_sqfoot}{price}$ 
 
-A house with a low `cost_ratio` is preferable?
+We need to find the USD price per square foot, but we cannot stop there because a low USD price does not mean we are getting a huge space; the house could be horribly small and that's why it is so cheap. We should aim for a low usd_per_sqfoot to price ratio; the more area we get per bigger-price -tagged house will have a cheaper USD to square foot, and the lower ratio of the USD per square foot to the total housing price will give us a lower ratio meaning we minimize cost per square foot and maximize the area.
 
-```{r new_feature cost per sqfoot, echo = F}
+A house with a low `cost_ratio` is preferable.
 
+```{r new_feature usd_per_sqfoot, echo = F}
+# Found NA alues when creating usd_per_sqfoot feature because area feature has NA values. Fix NA values on usd_per_sqfoot
 zillow_dat$usd_per_sqfoot <- zillow_dat$price / zillow_dat$area
-head(zillow_dat)
+```
+
+```{r fill NAs in usd_per_sqfoot, echo = F}
 zillow_dat[is.na(zillow_dat$usd_per_sqfoot),] <- 0
 
-mean(zillow_dat$usd_per_sqfoot)
+# mean(zillow_dat$usd_per_sqfoot) # Checks mean: should be ~403
+```
 
+```{r create feature cost_ratio, echo = F}
+zillow_dat$cost_ratio <- zillow_dat$usd_per_sqfoot / zillow_dat$price
+```
+
+```{r lowest cost ratios are biggest houses, echo = F}
+zillow_dat %>%
+  arrange(cost_ratio) %>%
+  head(10)
+```
+
+It turns out the most expensive houses are the best deal on the ratio of cost per square foot to the total cost, so we should set a limit that we only want to look at houses under, say 750,000$
+
+```{r look at cost ratio for houses under 750k, echo = F}
+
+```
+
+
+```{r bootstrap}
 boot.mean <- numeric(N)
 
 for(i in 1:N)
@@ -442,6 +465,8 @@ plot(zillow_dat$usd_per_sqfoot, zillow_dat$area)
 ```
 
 
+
+End note: The `area` feature should be filled intelligently because the analysis isn't as good as it could be.
 
 ### References:
 
